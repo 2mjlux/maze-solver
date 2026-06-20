@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Geany project files (local IDE state)
+*.geany
+
+# OS cruft
+.DS_Store
