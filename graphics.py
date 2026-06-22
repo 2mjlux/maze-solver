@@ -48,7 +48,7 @@ class Line:
 
 
 class Cell:
-    def __init__(self, window):
+    def __init__(self, window=None):
         self.has_left_wall = True
         self.has_right_wall = True
         self.has_top_wall = True
@@ -124,7 +124,7 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, x1, y1, num_rows, num_cols, cell_size_x, cell_size_y, win):
+    def __init__(self, x1, y1, num_rows, num_cols, cell_size_x, cell_size_y, win=None):
         self.x1 = x1
         self.y1 = y1
         self.num_rows = num_rows
@@ -152,8 +152,14 @@ class Maze:
         x2 = x1 + self.cell_size_x
         y2 = y1 + self.cell_size_y
         self.__cells[i][j].draw(x1, y1, x2, y2)
+        if self.__win is None:
+            print("No window defined in cell (window = None).")
+            return
         self.__animate()
 
     def __animate(self):
+        if self.__win is None:
+            print("No window defined in cell (window = None).")
+            return
         self.__win.redraw()
         time.sleep(0.05)

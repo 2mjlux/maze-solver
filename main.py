@@ -8,7 +8,7 @@ def main():
     # 2. Define your maze parameters
     margin = 50
     num_rows = 10
-    num_cols = 12
+    num_cols = 14
     cell_size_x = 50
     cell_size_y = 50
 
