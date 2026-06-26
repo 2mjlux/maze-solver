@@ -1,5 +1,6 @@
 from tkinter import Tk, BOTH, Canvas
 import time
+import random
 
 
 class Window:
@@ -60,6 +61,7 @@ class Cell:
         self.__y1 = -1.0
         self.__y2 = -1.0
         self.__win = window
+        self.visited = False
 
     def draw(self, x1, y1, x2, y2):
         self.__x1 = x1
@@ -124,7 +126,9 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, x1, y1, num_rows, num_cols, cell_size_x, cell_size_y, win=None):
+    def __init__(
+        self, x1, y1, num_rows, num_cols, cell_size_x, cell_size_y, win=None, seed=None
+    ):
         self.x1 = x1
         self.y1 = y1
         self.num_rows = num_rows
@@ -134,22 +138,31 @@ class Maze:
         self.__win = win  # window
         self.__cells = []
         self.__create_cells()
+        if seed is not None:
+            random.seed(seed)
         self.__break_entrance_and_exit()
+        self.__break_walls_r(0, 0)
+        self.__reset_cells_visited()
 
     def __create_cells(self):
         for i in range(self.num_cols):
             col = []
             for j in range(self.num_rows):
                 col.append(Cell(self.__win))
-            self.__cells.append(col)
-
+            self.__cells.append(col)  # self.__cells is a list of columns, where each
+            # column is itself a list of cells. So the structure looks like this:
+            # self.__cells[col][row]
         for i in range(self.num_cols):
             for j in range(self.num_rows):
                 self.__draw_cell(i, j)
 
     def __draw_cell(self, i, j):
-        x1 = self.x1 + (i * self.cell_size_x)
-        y1 = self.y1 + (j * self.cell_size_y)
+        x1 = self.x1 + (
+            i * self.cell_size_x
+        )  # pixel x = maze offset + column * cell width
+        y1 = self.y1 + (
+            j * self.cell_size_y
+        )  # pixel y = maze offset + row * cell height
         x2 = x1 + self.cell_size_x
         y2 = y1 + self.cell_size_y
         self.__cells[i][j].draw(x1, y1, x2, y2)
@@ -167,6 +180,67 @@ class Maze:
 
     def __break_entrance_and_exit(self):
         self.__cells[0][0].has_top_wall = False
-        self.__draw_cell(0,0)
-        self.__cells[self.num_cols-1][self.num_rows-1].has_bottom_wall = False
-        self.__draw_cell((self.num_cols-1),(self.num_rows-1))
+        self.__draw_cell(0, 0)
+        self.__cells[self.num_cols - 1][self.num_rows - 1].has_bottom_wall = False
+        self.__draw_cell((self.num_cols - 1), (self.num_rows - 1))
+
+    def __break_walls_r(self, i, j):
+        self.__cells[i][j].visited = True
+        while True:
+            self.__cells_to_visit = []
+            # left neighbour exists?
+            if i > 0 and not self.__cells[i - 1][j].visited:
+                self.__cells_to_visit.append((i - 1, j))
+            # right neighbour exists?
+            if i < (self.num_cols - 1) and not self.__cells[i + 1][j].visited:
+                self.__cells_to_visit.append((i + 1, j))
+            # up neighbour exists?
+            if j > 0 and not self.__cells[i][j - 1].visited:
+                self.__cells_to_visit.append((i, j - 1))
+            # down neighbour exists?
+            if j < (self.num_rows - 1) and not self.__cells[i][j + 1].visited:
+                self.__cells_to_visit.append((i, j + 1))
+            if not self.__cells_to_visit:  # base case
+                self.__draw_cell(i, j)  # draw the cell in its final wall state
+                return  # this call ends; control goes back to the previous call
+                # this is part of recursion unwinding
+                # previous calls resume and check their cells again
+            else:
+                direction_index = random.randrange(len(self.__cells_to_visit))
+                next_i, next_j = self.__cells_to_visit[direction_index]
+                # moving right
+                if next_i == i + 1:
+                    self.__cells[i][j].has_right_wall = False
+                    self.__cells[next_i][next_j].has_left_wall = False
+                # moving left
+                if next_i == i - 1:
+                    self.__cells[i][j].has_left_wall = False
+                    self.__cells[next_i][next_j].has_right_wall = False
+                # moving down
+                if next_j == j + 1:
+                    self.__cells[i][j].has_bottom_wall = False
+                    self.__cells[next_i][next_j].has_top_wall = False
+                # moving up
+                if next_j == j - 1:
+                    self.__cells[i][j].has_top_wall = False
+                    self.__cells[next_i][next_j].has_bottom_wall = False
+                # recursive step: move into the chosen neighbour and continue carving
+                self.__break_walls_r(next_i, next_j)
+
+    def __reset_cells_visited(self):
+        for i in range(self.num_cols):
+            for j in range(self.num_rows):
+                self.__cells[i][j].visited = False
+
+    def solve(self):
+        self._solve_r(0, 0)
+
+    def _solve_r(self, i=0, j=0):
+        self.__animate()
+        while True:
+            for i in range(self.num_cols):
+                for j in range(self.num_rows):
+                    self.__cells[i][j].visited = True
+                    if [i] == len(self.num_cols - 1) and [j] == len(self.num_rows - 1):
+                        return True
+
