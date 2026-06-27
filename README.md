@@ -1,6 +1,6 @@
 # Maze Solver
 
-An interactive Python application that generates random mazes and solves them visually using a recursive depth-first search (DFS) algorithm with backtracking.
+A Python application that generates random mazes and solves them visually using a recursive depth-first search (DFS) algorithm with backtracking.
 
 
 ## Features
