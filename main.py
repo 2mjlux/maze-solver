@@ -16,7 +16,10 @@ def main():
     # This will automatically trigger __create_cells and __draw_cell
     maze = Maze(margin, margin, num_rows, num_cols, cell_size_x, cell_size_y, win)
 
-    # 4. Keep the window open
+    # 4. Call the Maze solve:
+    maze.solve()
+
+    # 5. Keep the window open
     win.wait_for_close()
 
 
